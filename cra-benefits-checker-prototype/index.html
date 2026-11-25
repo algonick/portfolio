@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" href="data:,"/>
+<title>Benefits Checker — Concept Prototype | Canada Revenue Agency</title>
+<style>
+:root{
+  --red:#EB2D37; --red-dark:#C8102E; --ink:#1a1a1a; --muted:#595959; --line:#d9dde3;
+  --bg:#ffffff; --bg2:#f4f5f7; --card:#ffffff; --header-bg:#ffffff; --footer-bg:#26374a;
+  --green:#0a6b3a; --green-bg:#e6f4ec; --amber:#7a4a00; --amber-bg:#fff3cd; --blue-bg:#e8eef7;
+  --shadow:0 1px 4px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --ink:#f2f2f2; --muted:#b8bec9; --line:#3a4150; --bg:#12151a; --bg2:#1a1e26; --card:#1c212b; --header-bg:#171b22; --green-bg:#123524; --amber-bg:#3d2f0a; --blue-bg:#1e2e4a; --shadow:0 1px 4px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box}
+body{margin:0;font-family: "Noto Sans", "Helvetica Neue", Arial, sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:#284162;text-decoration:underline} @media(prefers-color-scheme:dark){a{color:#8fb0e6}}
+button,select,input{font:inherit}
+button,[role="button"]{min-height:44px}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
+/* Disclaimer - persistent */
+.proto-banner{background:#1a1a1a;color:#fff;padding:10px 16px;font-size:13.5px;line-height:1.45}
+.proto-banner strong{color:#ffd166}
+.proto-banner .inner{max-width:1020px;margin:0 auto;display:flex;gap:10px;align-items:flex-start}
+.proto-banner .dot{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--red);display:grid;place-items:center;font-weight:900;font-size:14px;margin-top:1px}
+
+/* GoC header */
+.gov-header{background:var(--header-bg);border-bottom:4px solid var(--red)}
+.gov-inner{max-width:1020px;margin:0 auto;padding:14px 16px 12px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.sig{line-height:1.15}
+.sig .en{font-size:19px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.sig .fr{font-size:13px;color:var(--muted)}
+.flag{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.14em;font-size:13px}
+.flag .leaf{width:36px;height:28px;background:var(--red);color:#fff;display:grid;place-items:center;font-size:18px;border-radius:2px}
+.cra-bar{background:var(--bg2);border-bottom:1px solid var(--line)}
+.cra-bar .inner{max-width:1020px;margin:0 auto;padding:8px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}
+.cra-bar b{font-size:15px}
+
+.wrap{max-width:1020px;margin:0 auto;padding:0 16px 48px}
+.hero{padding:28px 0 8px}
+.hero h1{font-size:clamp(28px,5vw,42px);line-height:1.05;margin:0;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p.lede{font-size:17px;color:var(--muted);max-width:640px;margin:12px 0 0}
+.live-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid var(--line);background:var(--card)}
+.pill .pulse{width:9px;height:9px;border-radius:50%;background:#1db954;box-shadow:0 0 0 4px rgba(29,185,84,.18)}
+.pill.cached .pulse{background:#e6a817;box-shadow:0 0 0 4px rgba(230,168,23,.2)}
+.pill.error .pulse{background:var(--red)}
+.btn{appearance:none;border:0;border-radius:6px;padding:11px 18px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn-sm{padding:8px 14px;font-size:14px}
+
+.tabs{display:flex;gap:6px;margin:22px 0 0;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px;font-weight:700;cursor:pointer;white-space:normal;color:var(--muted);text-align:left}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;margin-top:20px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:20px}
+.card h2{margin:0 0 6px;font-size:20px}
+.card h3{margin:0 0 6px;font-size:16px}
+.muted{color:var(--muted);font-size:14.5px}
+.progress{height:8px;background:var(--bg2);border-radius:999px;overflow:hidden;margin:14px 0 18px}
+.progress i{display:block;height:100%;background:var(--red);transition:width .35s}
+.q{margin-bottom:18px}
+.q legend,.q label.q-label{font-weight:700;display:block;margin-bottom:8px;font-size:15.5px}
+.q p.hint{margin:2px 0 8px;color:var(--muted);font-size:13.5px}
+.choices{display:grid;gap:8px}
+.choice{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:8px;padding:12px 14px;cursor:pointer;min-height:48px}
+.choice:has(input:checked){border-color:var(--red);background:color-mix(in srgb, var(--red) 6%, var(--card))}
+.choice input{width:20px;height:20px;accent-color:var(--red)}
+select,input[type="number"]{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);min-height:48px}
+.step-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.step-actions .spacer{flex:1}
+
+.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.02em}
+.badge-active{background:var(--green-bg);color:var(--green)}
+.badge-closed{background:#3a3a3a;color:#fff}
+.badge-notcra{background:var(--amber-bg);color:var(--amber)}
+.benefit{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--card)}
+.benefit + .benefit{margin-top:14px}
+.benefit.closed{opacity:.92;border-style:dashed}
+.benefit h3{font-size:17px;margin:0}
+.kv{font-size:14.5px;margin-top:10px}
+.kv b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.result-hero{border-left:5px solid var(--green);background:var(--green-bg);border-radius:8px;padding:16px}
+.result-hero.closed{border-left-color:#555;background:var(--bg2)}
+.notice{border-radius:8px;padding:14px 16px;font-size:14.5px}
+.notice.amber{background:var(--amber-bg);color:var(--ink);border:1px solid #e6c87a}
+.notice.blue{background:var(--blue-bg)}
+.checklist{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.checklist li{display:flex;gap:10px;font-size:14.5px}
+.checklist li::before{content:"✓";font-weight:900;color:var(--green);flex-shrink:0}
+footer{background:var(--footer-bg);color:#fff;margin-top:40px}
+footer .inner{max-width:1020px;margin:0 auto;padding:22px 16px 28px}
+footer a{color:#fff}
+.small{font-size:13px;color:var(--muted)} footer .small{color:#cbd5e1}
+.hidden{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+@media(max-width:640px){ table,thead,tbody,tr,th,td{display:block} thead{display:none} td{border:0;padding:6px 0} tr{padding:12px 0;border-bottom:1px solid var(--line)} }
+</style>
+</head>
+<body>
+
+<div class="proto-banner" role="note" aria-label="Prototype disclaimer">
+  <div class="inner"><span class="dot" aria-hidden="true">!</span><span><strong>Unofficial concept prototype — for a job portfolio only.</strong> Not affiliated with the Canada Revenue Agency or the Government of Canada. Demo data only — <strong>do not enter real personal information.</strong> Results are “may qualify” guidance, not entitlements. Always confirm on <a href="https://www.canada.ca" style="color:#fff;text-decoration:underline">canada.ca</a>.</span></div>
+</div>
+
+<header class="gov-header">
+  <div class="gov-inner">
+    <div class="sig" aria-label="Government of Canada">
+      <div class="en">Government of Canada</div>
+      <div class="fr">Gouvernement du Canada</div>
+    </div>
+    <div class="flag" aria-hidden="true"><span class="leaf">🍁</span> CANADA</div>
+  </div>
+  <div class="cra-bar"><div class="inner"><span><b>Canada Revenue Agency</b> &nbsp;·&nbsp; Agence du revenu du Canada</span><span class="muted">Concept prototype — not an official service</span></div></div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Find benefits you<br/><em>may qualify for.</em></h1>
+    <p class="lede">Answer a few plain questions about your household. This checker compares your answers to CRA benefit rules published in a live Google Sheet — with the exact amounts and official canada.ca links, word for word from the source.</p>
+    <div class="live-row" aria-live="polite">
+      <span class="pill" id="livePill"><span class="pulse"></span><span id="liveText">Connecting to live sheet…</span></span>
+      <span class="pill" id="fetchTimePill">Last fetch: —</span>
+      <button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">↻ Refresh live rules</button>
+      <a class="btn btn-ghost btn-sm" style="text-decoration:none;display:inline-flex;align-items:center" href="https://docs.google.com/spreadsheets/d/11HaPKFEnIgZ0Os5JNgmxxw8vNasm-KHOdhDpQBRJnTE/gviz/tq?tqx=out:csv&sheet=Benefits%20Rules" target="_blank" rel="noopener">View source sheet ↗</a>
+    </div>
+    <div id="fallbackNotice" class="notice amber hidden" style="margin-top:14px"><strong>Showing a cached snapshot</strong> (source checked 2026-11-20) because the live sheet could not be reached. Amounts below are from that snapshot and are labelled as cached — they are not presented as live.</div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" aria-selected="true" data-tab="checker">Benefits checker</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="directory">All benefits in the sheet</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="about">About this prototype</button>
+  </nav>
+
+  <!-- CHECKER -->
+  <section id="view-checker">
+    <div class="grid">
+      <div class="card" id="quizCard">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <h2 id="stepTitle">Step 1 of 5 — Where you live &amp; filing</h2><span class="small" id="stepCount">Question set A</span>
+        </div>
+        <div class="progress" aria-hidden="true"><i id="progBar" style="width:20%"></i></div>
+
+        <form id="quizForm" novalidate>
+          <!-- STEP 1 -->
+          <div class="step" data-step="1">
+            <fieldset class="q" style="border:0;padding:0;margin:0 0 18px">
+              <legend>Are you a resident of Canada for tax purposes?</legend>
+              <p class="hint">Most CRA benefits require this. Use a demo answer — not your real status for any official purpose.</p>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="resident" value="yes"/> Yes — I live in Canada for tax purposes</label>
+                <label class="choice"><input type="radio" name="resident" value="no"/> No</label>
+                <label class="choice"><input type="radio" name="resident" value="unsure"/> Not sure</label>
+              </div>
+            </fieldset>
+            <fieldset class="q" style="border:0;padding:0;margin:0">
+              <legend>Do you file a Canadian tax return every year?</legend>
+              <p class="hint">CCB and the Groceries and Essentials Benefit require annual filing — even with no income.</p>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="files" value="yes"/> Yes, every year</label>
+                <label class="choice"><input type="radio" name="files" value="no"/> No / not always</label>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- STEP 2 -->
+          <div class="step hidden" data-step="2">
+            <fieldset class="q" style="border:0;padding:0;margin:0 0 18px">
+              <legend>Do children under 18 live with you, and are you mainly responsible for their care?</legend>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="hasKids" value="yes"/> Yes</label>
+                <label class="choice"><input type="radio" name="hasKids" value="no"/> No children under 18 at home</label>
+              </div>
+            </fieldset>
+            <div class="q">
+              <label class="q-label" for="kidsUnder6">How many children under age 6?</label>
+              <select id="kidsUnder6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3 or more</option></select>
+            </div>
+            <div class="q">
+              <label class="q-label" for="kids6to17">How many children aged 6 to 17?</label>
+              <select id="kids6to17"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3 or more</option></select>
+            </div>
+          </div>
+
+          <!-- STEP 3 -->
+          <div class="step hidden" data-step="3">
+            <fieldset class="q" style="border:0;padding:0;margin:0 0 18px">
+              <legend>Are you 19 or older — or do you have a spouse / common-law partner, or are you a parent living with your child?</legend>
+              <p class="hint">This is the age / household test used for the Groceries and Essentials Benefit and the Workers Benefit.</p>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="age19" value="yes"/> Yes — one of those applies</label>
+                <label class="choice"><input type="radio" name="age19" value="no"/> No — none applies</label>
+              </div>
+            </fieldset>
+            <div class="q">
+              <label class="q-label" for="incomeBand">Rough household (adjusted family net) income — demo ranges only</label>
+              <p class="hint">Pick a range. This prototype never asks for an exact income or SIN.</p>
+              <select id="incomeBand">
+                <option value="low">Under $38,237</option>
+                <option value="mid1">$38,237 – $46,432</option>
+                <option value="mid2">$46,433 – $82,847</option>
+                <option value="high">Over $82,847</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STEP 4 -->
+          <div class="step hidden" data-step="4">
+            <fieldset class="q" style="border:0;padding:0;margin:0 0 18px">
+              <legend>Do you have working income of at least $3,000 a year?</legend>
+              <p class="hint">Employment or self-employment income. This is the entry test for the Canada Workers Benefit.</p>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="working" value="yes"/> Yes — I work and earn $3,000+</label>
+                <label class="choice"><input type="radio" name="working" value="no"/> No — not working, or under $3,000</label>
+              </div>
+            </fieldset>
+            <fieldset class="q" style="border:0;padding:0;margin:0">
+              <legend>Are you a full-time student for more than 13 weeks in the year?</legend>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="student" value="no"/> No</label>
+                <label class="choice"><input type="radio" name="student" value="yes"/> Yes — full-time student (13+ weeks)</label>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- STEP 5 -->
+          <div class="step hidden" data-step="5">
+            <fieldset class="q" style="border:0;padding:0;margin:0 0 18px">
+              <legend>Do you — or a child in your care — have a severe and prolonged impairment, or a Disability Tax Credit certificate (Form T2201)?</legend>
+              <div class="choices">
+                <label class="choice"><input type="radio" name="disability" value="self"/> Yes — for me</label>
+                <label class="choice"><input type="radio" name="disability" value="child"/> Yes — for a child in my care</label>
+                <label class="choice"><input type="radio" name="disability" value="both"/> Yes — for both me and a child</label>
+                <label class="choice"><input type="radio" name="disability" value="no"/> No</label>
+                <label class="choice"><input type="radio" name="disability" value="unsure"/> Not sure / never applied</label>
+              </div>
+            </fieldset>
+            <div class="notice blue"><strong>Privacy reminder:</strong> This is a demo. Your answers stay in this browser tab only — nothing is sent to CRA or saved. Do not enter real personal information.</div>
+          </div>
+
+          <div class="step-actions">
+            <button type="button" class="btn btn-ghost" id="backBtn">← Back</button>
+            <span class="spacer"></span>
+            <button type="button" class="btn btn-ghost" id="restartBtn2">Start over</button>
+            <button type="button" class="btn btn-primary" id="nextBtn">Continue →</button>
+          </div>
+        </form>
+
+        <!-- RESULTS -->
+        <div id="results" class="hidden" aria-live="polite">
+          <h2 style="margin-bottom:4px">Your results — you may qualify for…</h2>
+          <p class="muted" style="margin-top:0">Guidance only, based on the rules in the sheet <span id="resultsSourceLabel"></span>. CRA decides eligibility when you file / apply. Amounts below are copied exactly as published in the sheet — not estimates of what you would receive.</p>
+          <div id="resultsList"></div>
+          <div id="endedBox" style="margin-top:16px"></div>
+          <div id="notCraBox" style="margin-top:14px"></div>
+          <div class="step-actions">
+            <button type="button" class="btn btn-ghost" id="editAnswersBtn">← Edit answers</button>
+            <span class="spacer"></span>
+            <button type="button" class="btn btn-primary" id="restartBtn">Check again</button>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <h3>How this checker decides</h3>
+          <p class="muted">No black box. Each result traces to the “Who qualifies” text in the live sheet:</p>
+          <ul class="checklist">
+            <li><span><b>Children at home</b> → Canada Child Benefit; + DTC-eligible child → Child Disability Benefit</span></li>
+            <li><span><b>Resident + 19 / spouse / parent + files taxes</b> → Canada Groceries and Essentials Benefit (renamed from GST/HST credit, July 2026)</span></li>
+            <li><span><b>Working income $3,000+ &amp; low income</b> → Canada Workers Benefit</span></li>
+            <li><span><b>Severe &amp; prolonged impairment (T2201)</b> → Disability Tax Credit — a tax credit, not a cash payment</span></li>
+          </ul>
+          <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"/>
+          <h3>Ended — not available</h3>
+          <p class="muted" style="margin:0"><b>Canada Carbon Rebate is closed.</b> Final payment was issued starting <b>April 22, 2025</b>. It is shown in the directory only as ended — it will never appear in your “may qualify” results.</p>
+          <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"/>
+          <h3>Not CRA benefits</h3>
+          <p class="muted" style="margin:0">The <b>Canadian Dental Care Plan</b> and the <b>Canada Disability Benefit</b> are <b>not administered by CRA</b>. This checker does not present them as CRA benefits. Check canada.ca for the department that runs each program.</p>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>What this prototype demonstrates</h3>
+          <p class="muted">Built as a portfolio piece for CRA taxpayer services roles:</p>
+          <ul class="checklist">
+            <li><span><b>Guided, rules-based logic</b> — a short questionnaire mapped directly to published eligibility rules, with no invented criteria</span></li>
+            <li><span><b>Plain-language explanations</b> — government rules rewritten so a taxpayer can act on them, without changing their meaning</span></li>
+            <li><span><b>Careful use of published amounts</b> — figures copied exactly from the source sheet, linked to the official canada.ca page, with live-vs-cached status always visible</span></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- DIRECTORY -->
+  <section id="view-directory" class="hidden">
+    <p class="muted" style="margin-top:18px">Every row below comes from the Google Sheet feed <span id="dirSourceLabel"></span>. “Key amounts and rules” and “Who qualifies” are shown exactly as published in the sheet.</p>
+    <div id="directoryList"><p class="muted">Loading benefits…</p></div>
+    <div class="card" style="margin-top:16px">
+      <h3>Not in this CRA list — and why</h3>
+      <p class="muted" style="margin:0">The <b>Canadian Dental Care Plan</b> and the <b>Canada Disability Benefit</b> are federal benefits, but they are <b>not administered by CRA</b>, so they are not listed as CRA benefits here. The <b>Canada Carbon Rebate</b> <i>was</i> CRA-administered and is listed above only as <b>Closed</b>.</p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="view-about" class="hidden">
+    <div class="card" style="margin-top:20px;max-width:760px">
+      <h2>About this prototype</h2>
+      <p>This is an <b>unofficial concept prototype</b> built for a job portfolio for a candidate applying to CRA taxpayer services roles. It is not affiliated with the Canada Revenue Agency or the Government of Canada, and it is not an official benefits calculator.</p>
+      <h3>How it works</h3>
+      <p class="muted">On every load the page fetches a published Google Sheet as CSV, parses it in the browser, and renders the benefits and the checker logic from those rows. If the fetch fails, it falls back to a snapshot of the same rows captured at build time (source checked 2026-11-20) and labels it clearly as a <b>cached snapshot</b> — stale data is never presented as live.</p>
+      <h3>What it demonstrates about the builder</h3>
+      <ul class="checklist">
+        <li><span><b>Guided rules-based logic:</b> turning “Who qualifies” text into a short, answerable questionnaire with traceable outcomes</span></li>
+        <li><span><b>Plain-language service writing:</b> explaining filing requirements, phase-out thresholds, and the difference between a cash benefit and a non-refundable credit</span></li>
+        <li><span><b>Accuracy discipline:</b> no invented benefits or figures; closed programs shown only as ended; non-CRA programs never labelled as CRA; every benefit linked to its official canada.ca source</span></li>
+      </ul>
+      <h3>Branding note</h3>
+      <p class="muted">CRA pages use the Government of Canada signature (no separate CRA wordmark) plus the text name “Canada Revenue Agency,” with FIP red <span style="display:inline-block;width:12px;height:12px;background:#EB2D37;border-radius:2px;vertical-align:-1px"></span> #EB2D37. This prototype follows that pattern as a concept mock-up only.</p>
+      <div class="notice amber"><strong>Disclaimer:</strong> Unofficial concept prototype for a job portfolio. Not affiliated with CRA. Demo data only — do not enter real personal information. Results are “may qualify” guidance only, not entitlements or tax advice. For official information, visit canada.ca.</div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="inner">
+    <p style="margin:0 0 6px"><b>Unofficial concept prototype — job portfolio only.</b> Not affiliated with the Canada Revenue Agency or the Government of Canada.</p>
+    <p class="small" style="margin:0">Demo data only — do not enter real personal information. <span id="footerSource">Rules and amounts are read from a Google Sheet of CRA-published pages (source checked 2026-11-20) and linked to canada.ca for verification.</span> &nbsp;·&nbsp; <a href="https://www.canada.ca/en/revenue-agency.html" target="_blank" rel="noopener">Official CRA site ↗</a></p>
+  </div>
+</footer>
+
+<script>
+var SHEET_URL = "https://docs.google.com/spreadsheets/d/11HaPKFEnIgZ0Os5JNgmxxw8vNasm-KHOdhDpQBRJnTE/gviz/tq?tqx=out:csv&sheet=Benefits%20Rules";
+
+/* Build-time snapshot — same rows as the sheet, captured 2026-11-20. Used ONLY when live fetch fails, and always labelled cached. */
+var SNAPSHOT = [
+  {benefit:"Canada Child Benefit (CCB)", cra:"Yes", status:"Active", who:"Families living with a child under 18, primarily responsible for care, resident of Canada for tax purposes; both parents must file a tax return every year.", amounts:"Maximum per child under 6: $8,157/year ($679.75/month); per child 6-17: $6,883/year ($573.58/month). Full amount if adjusted family net income under $38,237; reduced above that. Shared custody: each parent gets 50%.", freq:"Monthly around the 20th", url:"https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-child-benefit/how-much.html", checked:"2026-11-20"},
+  {benefit:"Child Disability Benefit (CDB)", cra:"Yes", status:"Active", who:"Families caring for a child under 18 who is eligible for the Disability Tax Credit (Form T2201). Paid as part of the CCB.", amounts:"Up to $3,480/year ($290/month) per DTC-eligible child. Reduction starts when adjusted family net income exceeds $82,847.", freq:"Monthly with CCB", url:"https://www.canada.ca/en/revenue-agency/services/child-family-benefits/child-disability-benefit.html", checked:"2026-11-20"},
+  {benefit:"Canada Groceries and Essentials Benefit (CGEB)", cra:"Yes", status:"Active", who:"Resident of Canada for tax purposes; 19 or older (or have a spouse/common-law partner, or are a parent living with your child); file a tax return annually. No application — CRA assesses automatically. Note: this was renamed from the GST/HST credit in July 2026; eligibility and structure unchanged.", amounts:"Maximum single $679/year; couple $890/year; plus $234 per child under 19 (e.g. couple + 2 children $1,358/year). Amount rose 25% in July 2026, remaining for 5 years (2026-2031). Reduction of 5% of adjusted family net income above $46,432.", freq:"Quarterly: July 3 and October 5 2026; January 5 and April 5 2027", url:"https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-groceries-essentials-benefit/how-much/payment-amounts.html", checked:"2026-11-20"},
+  {benefit:"Canada Workers Benefit (CWB)", cra:"Yes", status:"Active", who:"Working individuals and families with low income; resident of Canada throughout the year; 19 or older on Dec 31 (or live with spouse/partner/child); at least $3,000 working income. Cannot claim if a full-time student over 13 weeks, in prison 90+ days, or tax-exempt diplomat.", amounts:"2025 tax year (outside Quebec/Alberta/Nunavut): basic maximum single $1,633, family $2,813; disability supplement up to $843. Claimed on line 45300 using Schedule 6. Up to 50% paid in advance (ACWB). NOTE: CRA amounts table did not render in the text fetch; figures corroborated by secondary sources citing the CRA page.", freq:"Annual via tax return; advance payments in 3 instalments", url:"https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-workers-benefit.html", checked:"2026-11-20"},
+  {benefit:"Disability Tax Credit (DTC)", cra:"Yes", status:"Active", who:"Person with a severe and prolonged impairment in physical or mental functions (or a supporting family member). Apply with Form T2201. This is a non-refundable tax credit, not a cash payment.", amounts:"Disability amount 2025 $10,138; 2026 $10,341. Supplement for children with disabilities 2025 $5,914; 2026 $6,032.", freq:"Reduces tax owing when claimed", url:"https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/rc4064/disability-related-information.html", checked:"2026-11-20"},
+  {benefit:"Canada Carbon Rebate (CCR)", cra:"Yes", status:"Closed", who:"Ended. The federal fuel charge stopped March 15 2025; final CCR payment was issued starting April 22 2025. No further quarterly payments. Retroactive payments only for tax years 2021-2024.", amounts:"No current amounts. Historical final amounts (2024-25 per quarter): Ontario single adult $151, family of four $302; Alberta single adult $228, family of four $456; rural supplement 20%.", freq:"None — benefit ended", url:"https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-carbon-rebate/what-changed.html", checked:"2026-11-20"}
+];
+
+var benefits = SNAPSHOT.slice();
+var isLive = false;
+var lastFetch = null;
+
+function parseCSV(text){
+  var rows=[]; var row=[]; var cur=""; var inQ=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i], n=text[i+1];
+    if(inQ){
+      if(c==='"' && n==='"'){ cur+='"'; i++; }
+      else if(c==='"'){ inQ=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===','){ row.push(cur); cur=""; }
+      else if(c==='\n'){ row.push(cur); cur=""; rows.push(row); row=[]; }
+      else if(c==='\r'){ /* skip */ }
+      else cur+=c;
+    }
+  }
+  if(cur.length||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(function(r){ return r.length>1 && r.join("").trim()!==""; });
+}
+function rowsToBenefits(rows){
+  if(!rows.length) return [];
+  var head = rows[0].map(function(h){ return h.trim().toLowerCase(); });
+  function idx(name){ return head.indexOf(name); }
+  var out=[];
+  for(var i=1;i<rows.length;i++){
+    var r=rows[i];
+    function get(name){ var j=idx(name); return j>=0 ? (r[j]||"").trim() : ""; }
+    var b = {
+      benefit: get("benefit"),
+      cra: get("administered by cra"),
+      status: get("status"),
+      who: get("who qualifies"),
+      amounts: get("key amounts and rules"),
+      freq: get("payment frequency"),
+      url: get("source url"),
+      checked: get("source checked")
+    };
+    if(b.benefit) out.push(b);
+  }
+  return out;
+}
+function esc(s){ var d=document.createElement("div"); d.textContent=s||""; return d.innerHTML; }
+
+function setLiveUI(){
+  var pill=document.getElementById("livePill"), txt=document.getElementById("liveText"), timePill=document.getElementById("fetchTimePill"), fb=document.getElementById("fallbackNotice");
+  pill.classList.remove("cached","error");
+  if(isLive){
+    txt.textContent="● Live from Google Sheet";
+    timePill.textContent="Last fetch: "+(lastFetch? lastFetch.toLocaleString("en-CA",{dateStyle:"medium",timeStyle:"medium"}) : "—");
+    fb.classList.add("hidden");
+  } else {
+    pill.classList.add("cached");
+    txt.textContent="◐ Cached snapshot — live fetch unavailable";
+    timePill.textContent="Snapshot source checked: 2026-11-20 · Live fetch failed at "+(lastFetch? lastFetch.toLocaleTimeString("en-CA"):"—");
+    fb.classList.remove("hidden");
+  }
+  var label = isLive ? "(live from Google Sheet, fetched "+(lastFetch?lastFetch.toLocaleTimeString("en-CA"):"")+")" : "(cached snapshot, source checked 2026-11-20)";
+  document.getElementById("resultsSourceLabel").textContent=label;
+  document.getElementById("dirSourceLabel").textContent=label+".";
+  var fs=document.getElementById("footerSource");
+  if(fs) fs.textContent = isLive ? "Rules and amounts are read live from a Google Sheet of CRA-published pages (last fetch "+(lastFetch?lastFetch.toLocaleString("en-CA"):"")+") and linked to canada.ca for verification." : "Rules and amounts shown are from a cached snapshot of CRA-published pages (source checked 2026-11-20) because the live sheet fetch failed — not live data — and linked to canada.ca for verification.";
+}
+
+function benefitCard(b, opts){
+  opts=opts||{};
+  var closed = (b.status||"").toLowerCase()==="closed";
+  var badge = closed ? '<span class="badge badge-closed">CLOSED — ENDED</span>' : '<span class="badge badge-active">ACTIVE · CRA-ADMINISTERED</span>';
+  var reason = opts.reason ? '<p style="margin:8px 0 0;font-size:14.5px"><b>Why this matched:</b> '+esc(opts.reason)+'</p>' : '';
+  var cta = closed
+    ? '<p class="muted" style="margin:10px 0 0"><b>This benefit has ended.</b> Final payment issued starting April 22, 2025. The link below explains what changed — it is not an application link.</p>'
+    : '<p style="margin:10px 0 0"><a href="'+esc(b.url)+'" target="_blank" rel="noopener">Official page on canada.ca ↗</a> <span class="small">— confirm eligibility and apply / file there.</span></p>';
+  return '<article class="benefit'+(closed?' closed':'')+'">'
+    +'<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><h3>'+esc(b.benefit)+'</h3>'+badge+'</div>'
+    + reason
+    +'<div class="kv"><b>Who qualifies (as published)</b>'+esc(b.who)+'</div>'
+    +'<div class="kv"><b>Key amounts and rules (exactly as published)</b>'+esc(b.amounts)+'</div>'
+    +'<div class="kv"><b>Payment frequency</b>'+esc(b.freq)+' &nbsp;·&nbsp; <span class="small">Source checked: '+esc(b.checked)+'</span></div>'
+    + cta + '</article>';
+}
+
+function renderDirectory(){
+  var el=document.getElementById("directoryList");
+  el.innerHTML = benefits.map(function(b){ return benefitCard(b); }).join("");
+}
+
+function findBenefit(substr){
+  for(var i=0;i<benefits.length;i++){ if(benefits[i].benefit.toLowerCase().indexOf(substr.toLowerCase())>=0) return benefits[i]; }
+  return null;
+}
+
+function loadLive(){
+  document.getElementById("liveText").textContent="Connecting to live sheet…";
+  fetch(SHEET_URL, {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+    .then(function(text){
+      var parsed = rowsToBenefits(parseCSV(text));
+      if(!parsed.length) throw new Error("Empty sheet");
+      benefits = parsed; isLive = true; lastFetch = new Date();
+      setLiveUI(); renderDirectory();
+    })
+    .catch(function(){
+      benefits = SNAPSHOT.slice(); isLive = false; lastFetch = new Date();
+      setLiveUI(); renderDirectory();
+    });
+}
+document.getElementById("refreshBtn").addEventListener("click", loadLive);
+
+/* Tabs */
+var tabs=document.querySelectorAll(".tab");
+tabs.forEach(function(t){
+  t.addEventListener("click", function(){
+    tabs.forEach(function(x){ x.setAttribute("aria-selected","false"); });
+    t.setAttribute("aria-selected","true");
+    ["checker","directory","about"].forEach(function(v){
+      document.getElementById("view-"+v).classList.toggle("hidden", v!==t.getAttribute("data-tab"));
+    });
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+
+/* Quiz wizard */
+var step=1, totalSteps=5;
+var stepTitles={1:"Step 1 of 5 — Where you live & filing",2:"Step 2 of 5 — Children in your care",3:"Step 3 of 5 — Household & income range",4:"Step 4 of 5 — Work",5:"Step 5 of 5 — Disability"};
+function showStep(n){
+  step=n;
+  document.querySelectorAll(".step").forEach(function(s){ s.classList.toggle("hidden", +s.getAttribute("data-step")!==n); });
+  document.getElementById("stepTitle").textContent=stepTitles[n];
+  document.getElementById("progBar").style.width=(n/totalSteps*100)+"%";
+  var bb=document.getElementById("backBtn"); bb.disabled = n===1; bb.style.opacity = n===1 ? ".45" : "1";
+  document.getElementById("nextBtn").textContent = n===totalSteps ? "See my results →" : "Continue →";
+  document.getElementById("results").classList.add("hidden");
+  document.getElementById("quizForm").classList.remove("hidden");
+}
+function radioVal(name){ var el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:null; }
+
+function computeResults(){
+  var resident=radioVal("resident"), files=radioVal("files"), hasKids=radioVal("hasKids"),
+      age19=radioVal("age19"), working=radioVal("working"), student=radioVal("student"),
+      disability=radioVal("disability");
+  var u6=+document.getElementById("kidsUnder6").value, o6=+document.getElementById("kids6to17").value;
+  var kids = hasKids==="yes" || u6+o6>0;
+  var incomeBand=document.getElementById("incomeBand").value;
+  var matches=[];
+
+  var ccb=findBenefit("Canada Child Benefit");
+  if(ccb && resident==="yes" && kids) matches.push({b:ccb, reason:"You live in Canada for tax purposes and have a child under 18 in your care."+(files!=="yes"?" Note: both parents must file a tax return every year to receive it — filing is required even with no income.":"")+(incomeBand==="low"?" Your income range is under $38,237, the range the sheet lists for the full amount; above that the amount is reduced.":incomeBand==="high"||incomeBand==="mid2"?" Your income range is above $38,237, so per the sheet the amount would be reduced from the maximum.":"")});
+
+  var cdb=findBenefit("Child Disability Benefit");
+  if(cdb && kids && (disability==="child"||disability==="both")) matches.push({b:cdb, reason:"You care for a child under 18 and indicated a disability / DTC connection for that child. CDB is paid as part of the CCB for a DTC-eligible child (Form T2201)."});
+
+  var cgeb=findBenefit("Groceries and Essentials");
+  if(cgeb && resident==="yes" && (age19==="yes"||kids)) matches.push({b:cgeb, reason:"You are a resident of Canada for tax purposes and meet the 19+ / spouse / parent-living-with-child test in the sheet."+(files!=="yes"?" Note: you must file a tax return annually — CRA assesses this automatically, there is no separate application.":" CRA assesses this automatically when you file — no separate application.")+" This benefit was renamed from the GST/HST credit in July 2026."});
+
+  var cwb=findBenefit("Canada Workers Benefit");
+  if(cwb && resident==="yes" && working==="yes" && student!=="yes" && (age19==="yes"||kids)) matches.push({b:cwb, reason:"You have working income of at least $3,000, live in Canada, and meet the 19+ / living-with-spouse-or-child test. Per the sheet it is claimed on line 45300 using Schedule 6, with up to 50% available in advance (ACWB)."+(incomeBand==="high"?" Your income range is higher — the sheet describes CWB as for working individuals and families with low income, so confirm the phase-out on canada.ca.":"")});
+  else if(cwb && working==="yes" && student==="yes") { /* explicitly excluded per sheet */ }
+
+  var dtc=findBenefit("Disability Tax Credit");
+  if(dtc && (disability==="self"||disability==="child"||disability==="both")) matches.push({b:dtc, reason:"You indicated a severe and prolonged impairment (for you and/or a child in your care). Per the sheet this is a non-refundable tax credit, not a cash payment — you apply with Form T2201."});
+  if(dtc && disability==="unsure") matches.push({b:dtc, reason:"You were not sure about disability status. The DTC (Form T2201) is the gateway credit in the sheet — it also unlocks the Child Disability Benefit for an eligible child. Worth checking the official page even if you have never applied."});
+
+  return {matches:matches, resident:resident, files:files};
+}
+
+function showResults(){
+  var res=computeResults();
+  document.getElementById("quizForm").classList.add("hidden");
+  var box=document.getElementById("results"); box.classList.remove("hidden");
+  var list=document.getElementById("resultsList");
+  if(res.resident==="no"){
+    list.innerHTML='<div class="notice amber"><strong>Based on your answers, no CRA benefits matched.</strong> The benefits in this sheet require being a resident of Canada for tax purposes. If that does not describe you, edit your answers — or check canada.ca for programs for newcomers and non-residents.</div>';
+  } else if(!res.matches.length){
+    list.innerHTML='<div class="notice amber"><strong>No matches from these answers — that does not mean you get nothing.</strong> Try editing your answers (for example, filing status or working income), and always check the full list in “All benefits in the sheet.” CRA decides eligibility when you file or apply.</div>';
+  } else {
+    list.innerHTML = res.matches.map(function(m){ return '<div class="result-hero" style="margin-bottom:12px"><b style="font-size:16px">You may qualify — '+esc(m.b.benefit)+'</b></div>'+benefitCard(m.b,{reason:m.reason}); }).join("");
+  }
+  if(res.files!=="yes"){
+    list.innerHTML += '<div class="notice blue" style="margin-top:12px"><strong>Filing matters:</strong> Several benefits in the sheet require filing a tax return every year, even if you have no income. Filing is how CRA assesses the Groceries and Essentials Benefit automatically and keeps the Child Benefit going.</div>';
+  }
+  var ccr=findBenefit("Carbon Rebate");
+  document.getElementById("endedBox").innerHTML = ccr ? '<h3 style="margin:0 0 8px">Explicitly ended — not in your results</h3>'+benefitCard(ccr) : "";
+  document.getElementById("notCraBox").innerHTML = '<div class="notice amber"><strong>Not CRA benefits:</strong> The Canadian Dental Care Plan and the Canada Disability Benefit are <b>not administered by CRA</b>, so they are never shown here as CRA benefits or in your results. See canada.ca for the responsible department for each.</div>';
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+document.getElementById("nextBtn").addEventListener("click", function(){
+  if(step<totalSteps) showStep(step+1); else showResults();
+});
+document.getElementById("backBtn").addEventListener("click", function(){ if(step>1) showStep(step-1); });
+function restart(){ document.getElementById("quizForm").reset(); showStep(1); window.scrollTo({top:0,behavior:"smooth"}); }
+document.getElementById("restartBtn").addEventListener("click", restart);
+document.getElementById("restartBtn2").addEventListener("click", restart);
+document.getElementById("editAnswersBtn").addEventListener("click", function(){ showStep(5); });
+
+/* Init */
+renderDirectory();
+setLiveUI();
+loadLive();
+showStep(1);
+</script>
+</body>
+</html>

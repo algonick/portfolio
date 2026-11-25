@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Taxpayer Inquiry Case Tracker — Portfolio Prototype | Canada Revenue Agency (Concept)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#EB2D37; --red-dark:#C8102E; --ink:#1a1a1a; --muted:#555; --bg:#f4f4f4; --card:#ffffff; --line:#ddd; --line2:#e8e8e8;
+  --blue:#26374A; --blue2:#2B4380; --link:#284162;
+  --amber-bg:#FFF3CD; --amber-border:#E6A817; --amber-text:#5c4300;
+  --green:#1B7A3D; --green-bg:#E6F4EA; --orange:#B45309; --orange-bg:#FEF3C7; --red-bg:#FDE8E9; --grey-bg:#EEEEEE;
+  --header-bg:#ffffff; --topbar:#000000;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 14px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --ink:#f0f0f0; --muted:#b8b8b8; --bg:#16181d; --card:#1f222a; --line:#3a3f4b; --line2:#2c303a; --link:#8db4e8; --header-bg:#1f222a; --amber-bg:#3a2f0a; --amber-text:#ffe08a; --amber-border:#a67c00; --green-bg:#123524; --orange-bg:#3d2c05; --red-bg:#3d1215; --grey-bg:#2a2e38; --shadow:0 1px 3px rgba(0,0,0,.4); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Noto Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px}
+a{color:var(--link);text-decoration:underline}
+button,select,input,textarea{font:inherit;min-height:44px}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #0535D2;outline-offset:2px}
+
+/* Disclaimer - always visible */
+.disclaimer{position:sticky;top:0;z-index:60;background:var(--amber-bg);border-bottom:3px solid var(--amber-border);color:var(--amber-text);padding:10px 16px;font-size:.92rem}
+.disclaimer-inner{max-width:1180px;margin:0 auto;display:flex;gap:10px;align-items:flex-start}
+.disclaimer strong{text-transform:uppercase;letter-spacing:.02em}
+.disclaimer p{margin:0}
+
+/* GoC header */
+.goc-top{background:var(--topbar);color:#fff;font-size:.78rem;padding:5px 16px}
+.goc-top-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.goc-header{background:var(--header-bg);border-bottom:4px solid var(--red)}
+.goc-header-inner{max-width:1180px;margin:0 auto;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.sig{display:flex;align-items:center;gap:14px}
+.flag{width:52px;height:26px;flex:none;display:grid;grid-template-columns:1fr 1.6fr 1fr;border:1px solid #ccc}
+.flag i{display:block}
+.flag .r{background:var(--red)}
+.flag .w{background:#fff;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:18px;line-height:1}
+.sig-text{line-height:1.15}
+.sig-text .en{font-family:"Lato",sans-serif;font-weight:700;font-size:1.02rem;letter-spacing:.01em}
+.sig-text .fr{font-size:.92rem;color:var(--muted)}
+.lang-toggle{font-size:.9rem;border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:4px;min-height:44px}
+.cra-bar{background:var(--blue);color:#fff}
+.cra-bar-inner{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.cra-bar .agency{font-weight:700;font-size:1.05rem}
+.cra-bar .agency span{font-weight:400;opacity:.85;font-size:.92rem}
+.cra-bar nav{display:flex;gap:6px;flex-wrap:wrap}
+.cra-bar nav button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:4px;padding:8px 14px;min-height:44px}
+.cra-bar nav button[aria-current="page"]{background:#fff;color:var(--blue);font-weight:700;border-color:#fff}
+
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+.breadcrumb{font-size:.88rem;color:var(--muted);margin-bottom:10px}
+h1{font-family:"Lato",sans-serif;font-size:2rem;line-height:1.15;margin:4px 0 6px;font-weight:900}
+.lede{font-size:1.08rem;color:var(--muted);max-width:760px;margin:0 0 18px}
+h2{font-family:"Lato",sans-serif;font-size:1.35rem;margin:0 0 10px}
+h3{font-size:1.02rem;margin:0 0 6px}
+
+/* Live bar */
+.livebar{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--green);border-radius:6px;padding:12px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow);margin-bottom:18px}
+.livebar.cached{border-left-color:var(--orange)}
+.livebar.loading{border-left-color:#888}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--green);flex:none;box-shadow:0 0 0 4px var(--green-bg)}
+.livebar.cached .dot{background:var(--orange);box-shadow:0 0 0 4px var(--orange-bg)}
+.livebar.loading .dot{background:#888}
+.livebar .lt{font-weight:700}
+.livebar .ls{font-size:.9rem;color:var(--muted)}
+.livebar .spacer{flex:1}
+.btn{border-radius:4px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;font-weight:600;min-height:44px}
+.btn-primary{background:var(--red);border-color:var(--red-dark);color:#fff}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-dark{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;box-shadow:var(--shadow)}
+.stat .n{font-family:"Lato",sans-serif;font-size:2rem;font-weight:900;line-height:1}
+.stat .l{font-size:.88rem;color:var(--muted);margin-top:4px}
+.stat.alert{border-top:5px solid var(--red)}
+.stat.warn{border-top:5px solid #E6A817}
+.stat.ok{border-top:5px solid var(--green)}
+.stat.info{border-top:5px solid var(--blue)}
+
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+@media(max-width:820px){.panels{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;box-shadow:var(--shadow)}
+.bar-row{display:grid;grid-template-columns:150px 1fr 36px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line2);font-size:.93rem}
+.bar-row:last-child{border-bottom:none}
+.bar-track{height:10px;background:var(--grey-bg);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:var(--blue);border-radius:99px}
+.bar-fill.red{background:var(--red)} .bar-fill.green{background:var(--green)} .bar-fill.amber{background:#E6A817}
+.sla-list{list-style:none;margin:8px 0 0;padding:0}
+.sla-list li{padding:8px 0;border-bottom:1px solid var(--line2);font-size:.93rem;display:flex;justify-content:space-between;gap:10px}
+.sla-list li:last-child{border-bottom:none}
+
+/* Filters */
+.filters{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;box-shadow:var(--shadow);margin-bottom:14px}
+.filters-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+@media(max-width:900px){.filters-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.filters-grid{grid-template-columns:1fr}}
+label.fl{font-size:.82rem;font-weight:700;display:block;margin-bottom:4px}
+.filters input,.filters select{width:100%;border:1px solid var(--line);border-radius:4px;padding:9px 10px;background:var(--card);color:var(--ink)}
+.filters-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:.92rem;color:var(--muted)}
+
+/* Table / cards */
+.table-wrap{background:var(--card);border:1px solid var(--line);border-radius:6px;overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:.94rem}
+th{text-align:left;background:var(--grey-bg);padding:11px 12px;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--line)}
+td{padding:11px 12px;border-bottom:1px solid var(--line2);vertical-align:top}
+tr.case-row{cursor:pointer}
+tr.case-row:hover td{background:rgba(38,55,74,.05)}
+.case-cards{display:none}
+@media(max-width:820px){
+  .table-wrap{display:none}
+  .case-cards{display:grid;gap:10px}
+  .ccard{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;box-shadow:var(--shadow);text-align:left;width:100%}
+  .ccard h3{margin-bottom:2px}
+}
+.pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:.78rem;font-weight:700;white-space:nowrap;border:1px solid transparent}
+.pill-new{background:#E8EEF7;color:#1d3557} .pill-prog{background:#E6F0FF;color:#1e40af} .pill-wait{background:#FFF4D6;color:#7a5200} .pill-esc{background:var(--red-bg);color:#8f1218} .pill-res{background:var(--green-bg);color:var(--green)}
+@media (prefers-color-scheme: dark){ .pill-new,.pill-prog{color:#bcd3ff} .pill-wait{color:#ffd97a} .pill-esc{color:#ffb3b8} }
+.pill-sla-ok{background:var(--green-bg);color:var(--green)} .pill-sla-risk{background:var(--red-bg);color:#8f1218} .pill-sla-met{background:var(--grey-bg);color:var(--muted)} .pill-sla-track{background:var(--grey-bg);color:var(--ink)}
+@media (prefers-color-scheme: dark){ .pill-sla-risk{color:#ffb3b8} }
+.prio-high{color:#8f1218;font-weight:700} @media (prefers-color-scheme: dark){.prio-high{color:#ffb3b8}}
+.mono{font-variant-numeric:tabular-nums;white-space:nowrap}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.empty{padding:36px 16px;text-align:center;color:var(--muted)}
+
+/* Detail */
+.detail{background:var(--card);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+.detail-head{background:var(--blue);color:#fff;padding:18px}
+.detail-head h2{margin:0;color:#fff}
+.detail-body{padding:18px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:820px){.kv{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.kv{grid-template-columns:1fr}}
+.kv div{border-top:3px solid var(--line);padding-top:8px}
+.kv dt{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.kv dd{margin:3px 0 0;font-weight:600}
+.notes-box{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px}
+.timeline{margin:0;padding-left:18px;font-size:.93rem;color:var(--muted)}
+
+/* Add form + about */
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:18px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;box-shadow:var(--shadow)}
+.card input,.card select,.card textarea{width:100%;border:1px solid var(--line);border-radius:4px;padding:9px 10px;background:var(--card);color:var(--ink);margin-bottom:10px}
+.local-note{background:var(--orange-bg);border:1px solid #E6A817;border-radius:6px;padding:10px 12px;font-size:.9rem;margin-bottom:12px;color:var(--ink)}
+.skills{list-style:none;margin:10px 0 0;padding:0}
+.skills li{padding:9px 0;border-bottom:1px solid var(--line2);display:flex;gap:10px}
+.skills li:last-child{border-bottom:none}
+.skills .ic{width:30px;height:30px;flex:none;border-radius:6px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem}
+
+footer{border-top:4px solid var(--red);background:var(--card);margin-top:10px}
+.footer-inner{max-width:1180px;margin:0 auto;padding:20px 16px 30px;font-size:.9rem;color:var(--muted)}
+.footer-inner .sigline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:14px;color:var(--ink);font-weight:600}
+.hidden{display:none !important}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:80;background:#111;color:#fff;padding:12px 18px;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.3);max-width:92vw;font-size:.94rem}
+</style>
+</head>
+<body>
+
+<div class="disclaimer" role="alert">
+  <div class="disclaimer-inner">
+    <span aria-hidden="true" style="font-size:1.3rem;line-height:1">⚠</span>
+    <p><strong>Unofficial concept prototype — not the Canada Revenue Agency.</strong> Built for a job portfolio only. Not affiliated with or endorsed by the Canada Revenue Agency or the Government of Canada. All cases are fictional demo data. <strong>Do not enter real personal information, SINs, or account details.</strong></p>
+  </div>
+</div>
+
+<div class="goc-top"><div class="goc-top-inner"><span>Concept prototype using Government of Canada visual identity for portfolio purposes</span><span>Canada.ca style — demonstration only</span></div></div>
+
+<header class="goc-header">
+  <div class="goc-header-inner">
+    <div class="sig" aria-label="Government of Canada signature">
+      <div class="flag" aria-hidden="true"><i class="r"></i><i class="w">🍁</i><i class="r"></i></div>
+      <div class="sig-text">
+        <div class="en">Government of Canada</div>
+        <div class="fr">Gouvernement du Canada</div>
+      </div>
+    </div>
+    <button class="lang-toggle" type="button" onclick="showToast('Français: concept prototype — bilingual header shown for authenticity. Full French version not included in this demo.')">Français</button>
+  </div>
+</header>
+
+<div class="cra-bar">
+  <div class="cra-bar-inner">
+    <div class="agency">Canada Revenue Agency <span>· Agence du revenu du Canada</span></div>
+    <nav aria-label="Views">
+      <button type="button" id="nav-list" aria-current="page" onclick="showList()">Case queue</button>
+      <button type="button" id="nav-add" onclick="document.getElementById('add-section').scrollIntoView({behavior:'smooth'});showList()">＋ Add a case (local only)</button>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap" id="main">
+  <div class="breadcrumb">Canada Revenue Agency (concept) &nbsp;›&nbsp; Taxpayer services &nbsp;›&nbsp; Case tracker prototype</div>
+
+  <!-- LIST VIEW -->
+  <section id="view-list">
+    <h1>Taxpayer inquiry case tracker</h1>
+    <p class="lede">A working portfolio prototype of the daily work in taxpayer services: logging inquiries, triaging by category and priority, tracking status against a service standard, and escalating cases that need a senior review — with every case documented.</p>
+
+    <div class="livebar loading" id="livebar" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <div>
+        <div class="lt" id="live-title">Loading cases…</div>
+        <div class="ls" id="live-sub">Fetching the live Google Sheet feed.</div>
+      </div>
+      <div class="spacer"></div>
+      <a class="btn" href="https://docs.google.com/spreadsheets/d/11HaPKFEnIgZ0Os5JNgmxxw8vNasm-KHOdhDpQBRJnTE/gviz/tq?tqx=out:csv&sheet=Cases" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">View source sheet ↗</a>
+      <button class="btn btn-primary" type="button" id="refresh-btn">↻ Refresh live data</button>
+    </div>
+
+    <!-- Overview -->
+    <div class="stats" id="stats" aria-label="Overview"></div>
+
+    <div class="panels">
+      <div class="panel">
+        <h2>Cases by status</h2>
+        <div id="status-bars"></div>
+      </div>
+      <div class="panel">
+        <h2>SLA watchlist</h2>
+        <p class="small muted" style="margin:0">Cases flagged <strong>At risk</strong> in the sheet, plus open cases past their SLA due date. These are worked first.</p>
+        <ul class="sla-list" id="sla-list"></ul>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters" role="search">
+      <div class="filters-grid">
+        <div>
+          <label class="fl" for="q">Search cases</label>
+          <input id="q" type="search" placeholder="Search by case ID, name, category or note…" autocomplete="off">
+        </div>
+        <div>
+          <label class="fl" for="f-status">Status</label>
+          <select id="f-status"><option value="">All statuses</option></select>
+        </div>
+        <div>
+          <label class="fl" for="f-category">Category</label>
+          <select id="f-category"><option value="">All categories</option></select>
+        </div>
+        <div>
+          <label class="fl" for="f-channel">Channel</label>
+          <select id="f-channel"><option value="">All channels</option></select>
+        </div>
+      </div>
+      <div class="filters-foot">
+        <span id="result-count"></span>
+        <span style="flex:1"></span>
+        <label style="display:flex;gap:8px;align-items:center;min-height:44px;padding:4px 0"><input type="checkbox" id="f-sla" style="min-height:auto;width:20px;height:20px"> Show at-risk / overdue only</label>
+        <button class="btn" type="button" id="clear-btn">Clear filters</button>
+      </div>
+    </div>
+
+    <!-- Table (desktop) -->
+    <div class="table-wrap">
+      <table aria-label="Cases">
+        <thead><tr><th>Case</th><th>Taxpayer</th><th>Category</th><th>Channel</th><th>Status</th><th>Priority</th><th>SLA due</th><th>SLA</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty hidden" id="empty-state">No cases match those filters. Try clearing the search or filters.</div>
+    </div>
+    <!-- Cards (mobile) -->
+    <div class="case-cards" id="cards"></div>
+    <div class="empty hidden" id="empty-state-m">No cases match those filters. Try clearing the search or filters.</div>
+
+    <div class="grid2" id="add-section">
+      <div class="card">
+        <h2>Add a case — local demo only</h2>
+        <div class="local-note"><strong>Local only:</strong> cases added here appear in this browser session only. They are <strong>not</strong> written to the Google Sheet and disappear on reload. Use fictional details only — never real personal information.</div>
+        <form id="add-form">
+          <label class="fl" for="a-taxpayer">Taxpayer (first name + last initial, fictional)</label>
+          <input id="a-taxpayer" required placeholder="e.g. Jamie L." maxlength="40">
+          <label class="fl" for="a-category">Category</label>
+          <select id="a-category" required></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label class="fl" for="a-channel">Channel</label><select id="a-channel"><option>Phone</option><option>Online</option><option>Mail</option></select></div>
+            <div><label class="fl" for="a-priority">Priority</label><select id="a-priority"><option>Standard</option><option>High</option><option>Low</option></select></div>
+          </div>
+          <label class="fl" for="a-notes">Notes (what was asked, what was advised)</label>
+          <textarea id="a-notes" rows="3" placeholder="Summarize the inquiry and next step…" maxlength="500"></textarea>
+          <button class="btn btn-dark" type="submit" style="width:100%">Add case to this demo session</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>What this prototype demonstrates</h2>
+        <p class="small muted" style="margin:0">Built as a portfolio concept for taxpayer services roles. It mirrors the workflow of a contact-centre / taxpayer services queue, using fictional cases only.</p>
+        <ul class="skills">
+          <li><span class="ic">1</span><div><strong>Case triage</strong><br><span class="small muted">Sorting new inquiries by category, channel and priority so urgent and time-sensitive cases surface first.</span></div></li>
+          <li><span class="ic">2</span><div><strong>Ticketing &amp; documentation</strong><br><span class="small muted">Every case carries an ID, dates, owner and a plain-language note of what was asked and what was advised.</span></div></li>
+          <li><span class="ic">3</span><div><strong>Status tracking</strong><br><span class="small muted">New → In Progress → Waiting on taxpayer → Resolved, so no inquiry sits untracked.</span></div></li>
+          <li><span class="ic">4</span><div><strong>SLA awareness</strong><br><span class="small muted">Due dates and At risk flags are visible in the queue, not buried — the watchlist is worked first.</span></div></li>
+          <li><span class="ic">5</span><div><strong>Escalation</strong><br><span class="small muted">Cases needing senior review (for example hardship or business verification) are marked Escalated with the reason in the notes.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETAIL VIEW -->
+  <section id="view-detail" class="hidden">
+    <button class="btn" type="button" onclick="showList()" style="margin-bottom:14px">← Back to case queue</button>
+    <div class="detail" id="detail-box"></div>
+    <div class="disclaimer" style="position:static;border:1px solid var(--amber-border);border-radius:6px;margin-top:14px">
+      <p style="margin:0"><strong>Reminder:</strong> Unofficial portfolio prototype. Fictional demo case only — not a real CRA record, and nothing here contacts or updates any CRA system.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p><strong style="color:var(--ink)">About this page:</strong> Unofficial concept prototype built for a job portfolio. Not affiliated with or endorsed by the Canada Revenue Agency or the Government of Canada. Case data is fictional, loaded live from a public Google Sheet created for this demo, with a clearly labelled cached snapshot used only if the live feed cannot be reached. Do not enter real personal information.</p>
+    <p>Branding note: CRA pages use the Government of Canada signature (shown above) with the text name “Canada Revenue Agency” — there is no separate CRA wordmark. FIP red used here: #EB2D37.</p>
+    <div class="sigline"><span>Government of Canada — concept use only</span><span>Gouvernement du Canada</span></div>
+  </div>
+</footer>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script>
+var SHEET_URL = "https://docs.google.com/spreadsheets/d/11HaPKFEnIgZ0Os5JNgmxxw8vNasm-KHOdhDpQBRJnTE/gviz/tq?tqx=out:csv&sheet=Cases";
+/* Build-time snapshot fetched 2026-11-20 from the same feed — used ONLY if live fetch fails, and labelled as cached. */
+var SNAPSHOT = [
+{"Case ID":"CRA-1001","Date Opened":"2026-11-02","Taxpayer":"Marie T.","Category":"Individual income tax","Channel":"Phone","Status":"Resolved","Priority":"Standard","SLA Due":"2026-11-09","SLA Status":"Met","Assigned To":"A. Cafazzo","Notes":"Missing T4 slip; advised to check My Account and request a copy from employer."},
+{"Case ID":"CRA-1002","Date Opened":"2026-11-03","Taxpayer":"Devon K.","Category":"Benefits and credits","Channel":"Online","Status":"In Progress","Priority":"Standard","SLA Due":"2026-11-10","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"Canada Child Benefit payment date question; verifying payment schedule."},
+{"Case ID":"CRA-1003","Date Opened":"2026-11-04","Taxpayer":"Sam R.","Category":"My Account help","Channel":"Phone","Status":"In Progress","Priority":"High","SLA Due":"2026-11-06","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"Locked out of My Account after password reset; guiding through recovery steps."},
+{"Case ID":"CRA-1004","Date Opened":"2026-11-05","Taxpayer":"Alex N.","Category":"Direct deposit","Channel":"Online","Status":"Waiting on taxpayer","Priority":"Standard","SLA Due":"2026-11-12","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"Bank details update requested; waiting for void cheque confirmation."},
+{"Case ID":"CRA-1005","Date Opened":"2026-11-06","Taxpayer":"Jordan P.","Category":"Business tax","Channel":"Phone","Status":"Escalated","Priority":"High","SLA Due":"2026-11-09","SLA Status":"At risk","Assigned To":"A. Cafazzo","Notes":"GST/HST filing question escalated to senior agent; business number verification needed."},
+{"Case ID":"CRA-1006","Date Opened":"2026-11-09","Taxpayer":"Fatima S.","Category":"Individual income tax","Channel":"Mail","Status":"New","Priority":"Standard","SLA Due":"2026-11-16","SLA Status":"On track","Assigned To":"Unassigned","Notes":"Notice of assessment question received by mail; needs review."},
+{"Case ID":"CRA-1007","Date Opened":"2026-11-10","Taxpayer":"Chris D.","Category":"Benefits and credits","Channel":"Phone","Status":"In Progress","Priority":"Standard","SLA Due":"2026-11-17","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"GST/HST credit eligibility after move to a new province."},
+{"Case ID":"CRA-1008","Date Opened":"2026-11-11","Taxpayer":"Pat L.","Category":"Debt and payment arrangements","Channel":"Phone","Status":"Escalated","Priority":"High","SLA Due":"2026-11-13","SLA Status":"At risk","Assigned To":"A. Cafazzo","Notes":"Payment arrangement request; escalated for review of hardship documentation."},
+{"Case ID":"CRA-1009","Date Opened":"2026-11-12","Taxpayer":"Riley M.","Category":"My Account help","Channel":"Online","Status":"Resolved","Priority":"Standard","SLA Due":"2026-11-19","SLA Status":"Met","Assigned To":"A. Cafazzo","Notes":"Two-factor authentication setup completed; account access restored."},
+{"Case ID":"CRA-1010","Date Opened":"2026-11-13","Taxpayer":"Noor A.","Category":"Individual income tax","Channel":"Online","Status":"New","Priority":"Standard","SLA Due":"2026-11-20","SLA Status":"On track","Assigned To":"Unassigned","Notes":"Question about claiming medical expenses for a dependant."},
+{"Case ID":"CRA-1011","Date Opened":"2026-11-16","Taxpayer":"Taylor B.","Category":"Address change","Channel":"Phone","Status":"In Progress","Priority":"Low","SLA Due":"2026-11-23","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"Mailing address update; confirming effective date for correspondence."},
+{"Case ID":"CRA-1012","Date Opened":"2026-11-17","Taxpayer":"Casey W.","Category":"Benefits and credits","Channel":"Online","Status":"Waiting on taxpayer","Priority":"Standard","SLA Due":"2026-11-24","SLA Status":"On track","Assigned To":"A. Cafazzo","Notes":"Canada Workers Benefit advance payment question; waiting for income documents."}
+];
+var SNAPSHOT_LABEL = "Cached snapshot captured at build time (Nov 20, 2026)";
+
+var allCases = [];
+var localSeq = 2000;
+
+function parseCSV(text){
+  var rows=[]; var row=[]; var cur=""; var inQ=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i], n=text[i+1];
+    if(inQ){
+      if(c==='"' && n==='"'){cur+='"'; i++;}
+      else if(c==='"'){inQ=false;}
+      else{cur+=c;}
+    } else {
+      if(c==='"'){inQ=true;}
+      else if(c===','){row.push(cur); cur="";}
+      else if(c==='\n'){row.push(cur); rows.push(row); row=[]; cur="";}
+      else if(c==='\r'){/* skip */}
+      else{cur+=c;}
+    }
+  }
+  if(cur.length||row.length){row.push(cur); rows.push(row);}
+  rows = rows.filter(function(r){return r.length>1 || (r[0]&&r[0].trim());});
+  if(!rows.length) return [];
+  var headers = rows[0].map(function(h){return h.trim();});
+  var out=[];
+  for(var r=1;r<rows.length;r++){
+    var obj={};
+    headers.forEach(function(h,idx){ obj[h]=(rows[r][idx]||"").trim(); });
+    if(obj["Case ID"]) out.push(obj);
+  }
+  return out;
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m];});}
+function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function isOpen(c){ return c["Status"]!=="Resolved"; }
+function isOverdue(c){ return isOpen(c) && c["SLA Due"] && c["SLA Due"] < todayStr(); }
+function isAtRisk(c){ return (c["SLA Status"]||"").toLowerCase()==="at risk"; }
+function needsAttention(c){ return isOpen(c) && (isAtRisk(c) || isOverdue(c)); }
+
+function statusPill(s){
+  var map={"New":"pill-new","In Progress":"pill-prog","Waiting on taxpayer":"pill-wait","Escalated":"pill-esc","Resolved":"pill-res"};
+  return '<span class="pill '+(map[s]||"pill-new")+'">'+esc(s)+'</span>';
+}
+function slaPill(c){
+  var s=(c["SLA Status"]||"");
+  var cls = s==="At risk" ? "pill-sla-risk" : s==="Met" ? "pill-sla-met" : "pill-sla-track";
+  var label = s;
+  if(isOverdue(c)) label = s==="At risk" ? "At risk · Past due" : "Past due";
+  return '<span class="pill '+cls+'">'+esc(label)+'</span>';
+}
+function fmtDate(dstr){
+  if(!dstr) return "—";
+  var d=new Date(dstr+"T12:00:00");
+  if(isNaN(d)) return esc(dstr);
+  return d.toLocaleDateString("en-CA",{month:"short",day:"numeric",year:"numeric"});
+}
+function fmtTime(d){
+  return d.toLocaleString("en-CA",{timeZone:"America/Toronto",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true})+" ET";
+}
+
+function populateFilters(){
+  function uniq(key){ var s={}; allCases.forEach(function(c){ if(c[key]) s[c[key]]=1; }); return Object.keys(s).sort(); }
+  function fill(id, vals, keep){
+    var el=document.getElementById(id); var cur=keep?el.value:"";
+    el.innerHTML='<option value="">'+el.getAttribute("data-all")+'</option>'+vals.map(function(v){return '<option value="'+esc(v)+'">'+esc(v)+'</option>';}).join("");
+    el.value=cur;
+  }
+  document.getElementById("f-status").setAttribute("data-all","All statuses");
+  document.getElementById("f-category").setAttribute("data-all","All categories");
+  document.getElementById("f-channel").setAttribute("data-all","All channels");
+  fill("f-status", uniq("Status"), true);
+  fill("f-category", uniq("Category"), true);
+  fill("f-channel", uniq("Channel"), true);
+  var ac=document.getElementById("a-category");
+  ac.innerHTML = uniq("Category").map(function(v){return '<option>'+esc(v)+'</option>';}).join("");
+}
+
+function renderOverview(){
+  var total=allCases.length;
+  var open=allCases.filter(isOpen).length;
+  var risk=allCases.filter(function(c){return needsAttention(c);}).length;
+  var escCount=allCases.filter(function(c){return c["Status"]==="Escalated";}).length;
+  var res=allCases.filter(function(c){return c["Status"]==="Resolved";}).length;
+  document.getElementById("stats").innerHTML =
+    '<div class="stat info"><div class="n">'+total+'</div><div class="l">Total cases in queue<br>'+open+' still open</div></div>'+
+    '<div class="stat '+(risk?'alert':'ok')+'"><div class="n">'+risk+'</div><div class="l">At risk / past SLA due<br>Needs attention first</div></div>'+
+    '<div class="stat warn"><div class="n">'+escCount+'</div><div class="l">Escalated<br>With senior review</div></div>'+
+    '<div class="stat ok"><div class="n">'+res+'</div><div class="l">Resolved<br>Closed with documentation</div></div>';
+
+  var order=["New","In Progress","Waiting on taxpayer","Escalated","Resolved"];
+  var counts={}; allCases.forEach(function(c){counts[c["Status"]]=(counts[c["Status"]]||0)+1;});
+  var max=Math.max.apply(null, order.map(function(s){return counts[s]||0;}).concat([1]));
+  var colors={"Escalated":"red","Resolved":"green","Waiting on taxpayer":"amber"};
+  document.getElementById("status-bars").innerHTML = order.map(function(s){
+    var n=counts[s]||0;
+    return '<div class="bar-row"><span>'+esc(s)+'</span><span class="bar-track"><span class="bar-fill '+(colors[s]||"")+'" style="display:block;width:'+Math.round(n/max*100)+'%"></span></span><strong>'+n+'</strong></div>';
+  }).join("");
+
+  var watch=allCases.filter(needsAttention).sort(function(a,b){return a["SLA Due"]<b["SLA Due"]?-1:1;});
+  document.getElementById("sla-list").innerHTML = watch.length ? watch.map(function(c){
+    return '<li><span><button type="button" style="background:none;border:none;padding:0;min-height:44px;color:var(--link);text-decoration:underline;font-weight:700" onclick="openCase(\''+esc(c["Case ID"])+'\')">'+esc(c["Case ID"])+'</button> — '+esc(c["Taxpayer"])+' · '+esc(c["Category"])+'</span><span class="mono small">'+(isAtRisk(c)?"At risk":"Past due")+" · due "+fmtDate(c["SLA Due"])+'</span></li>';
+  }).join("") : '<li>No cases are at risk or past due right now.</li>';
+}
+
+function filtered(){
+  var q=document.getElementById("q").value.trim().toLowerCase();
+  var st=document.getElementById("f-status").value;
+  var cat=document.getElementById("f-category").value;
+  var ch=document.getElementById("f-channel").value;
+  var slaOnly=document.getElementById("f-sla").checked;
+  return allCases.filter(function(c){
+    if(st && c["Status"]!==st) return false;
+    if(cat && c["Category"]!==cat) return false;
+    if(ch && c["Channel"]!==ch) return false;
+    if(slaOnly && !needsAttention(c)) return false;
+    if(q){
+      var hay=(c["Case ID"]+" "+c["Taxpayer"]+" "+c["Category"]+" "+c["Channel"]+" "+c["Status"]+" "+c["Notes"]+" "+c["Assigned To"]).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+}
+
+function renderList(){
+  renderOverview();
+  var rows=filtered();
+  document.getElementById("result-count").textContent = "Showing "+rows.length+" of "+allCases.length+" cases";
+  var tb=document.getElementById("tbody");
+  tb.innerHTML = rows.map(function(c){
+    return '<tr class="case-row" tabindex="0" role="button" aria-label="Open case '+esc(c["Case ID"])+'" onclick="openCase(\''+esc(c["Case ID"])+'\')" onkeydown="if(event.key===\'Enter\')openCase(\''+esc(c["Case ID"])+'\')">'
+      +'<td class="mono"><strong>'+esc(c["Case ID"])+'</strong>'+(c._local?'<br><span class="pill pill-wait">Local only</span>':"")+'<br><span class="muted small">Opened '+fmtDate(c["Date Opened"])+'</span></td>'
+      +'<td><strong>'+esc(c["Taxpayer"])+'</strong><br><span class="muted small">'+esc(c["Assigned To"])+'</span></td>'
+      +'<td>'+esc(c["Category"])+'</td><td>'+esc(c["Channel"])+'</td>'
+      +'<td>'+statusPill(c["Status"])+'</td>'
+      +'<td class="'+(c["Priority"]==="High"?"prio-high":"")+'">'+esc(c["Priority"])+'</td>'
+      +'<td class="mono">'+fmtDate(c["SLA Due"])+'</td><td>'+slaPill(c)+'</td></tr>';
+  }).join("");
+  document.getElementById("cards").innerHTML = rows.map(function(c){
+    return '<button type="button" class="ccard" onclick="openCase(\''+esc(c["Case ID"])+'\')"><div style="display:flex;justify-content:space-between;gap:8px"><h3 class="mono">'+esc(c["Case ID"])+' — '+esc(c["Taxpayer"])+'</h3>'+slaPill(c)+'</div><div class="small muted">'+esc(c["Category"])+' · '+esc(c["Channel"])+' · '+esc(c["Priority"])+' priority</div><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+statusPill(c["Status"])+'<span class="small">SLA due '+fmtDate(c["SLA Due"])+'</span></div><p class="small" style="margin:8px 0 0">'+esc(c["Notes"])+'</p></button>';
+  }).join("");
+  var empty = rows.length===0;
+  document.getElementById("empty-state").classList.toggle("hidden", !empty);
+  document.getElementById("empty-state-m").classList.toggle("hidden", !empty);
+}
+
+function openCase(id){
+  var c=null; allCases.forEach(function(x){ if(x["Case ID"]===id) c=x; });
+  if(!c) return;
+  document.getElementById("view-list").classList.add("hidden");
+  document.getElementById("view-detail").classList.remove("hidden");
+  document.getElementById("nav-list").removeAttribute("aria-current");
+  window.scrollTo({top:0});
+  var next = c["Status"]==="Resolved" ? "Case closed. Note documents what was advised." :
+             c["Status"]==="Escalated" ? "With senior agent for review — see note for the reason for escalation." :
+             c["Status"]==="Waiting on taxpayer" ? "Waiting on the taxpayer — see note for what was requested." :
+             c["Status"]==="New" ? "Not yet assigned. Triage: confirm category and priority, then assign." :
+             "In progress with the assigned agent — see note for the current step.";
+  document.getElementById("detail-box").innerHTML =
+    '<div class="detail-head"><div class="small" style="opacity:.85">CASE DETAIL · FICTIONAL DEMO RECORD'+(c._local?" · LOCAL-ONLY CASE (NOT IN SHEET)":"")+'</div><h2 class="mono">'+esc(c["Case ID"])+' — '+esc(c["Taxpayer"])+'</h2><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+statusPill(c["Status"])+slaPill(c)+'<span class="pill pill-sla-track">'+esc(c["Priority"])+' priority</span></div></div>'
+    +'<div class="detail-body"><dl class="kv">'
+    +'<div><dt>Date opened</dt><dd>'+fmtDate(c["Date Opened"])+'</dd></div>'
+    +'<div><dt>Category</dt><dd>'+esc(c["Category"])+'</dd></div>'
+    +'<div><dt>Channel</dt><dd>'+esc(c["Channel"])+'</dd></div>'
+    +'<div><dt>Assigned to</dt><dd>'+esc(c["Assigned To"])+'</dd></div>'
+    +'<div><dt>SLA due</dt><dd>'+fmtDate(c["SLA Due"])+'</dd></div>'
+    +'<div><dt>SLA status (from sheet)</dt><dd>'+esc(c["SLA Status"])+(isOverdue(c)?' — past due date, still open':'')+'</dd></div>'
+    +'</dl>'
+    +'<h3>Case notes — what was asked, what was advised</h3><div class="notes-box">'+esc(c["Notes"])+'</div>'
+    +'<h3 style="margin-top:18px">Handling summary</h3><ul class="timeline"><li>Opened '+fmtDate(c["Date Opened"])+' via '+esc(c["Channel"])+', categorized as '+esc(c["Category"])+'.</li><li>Current status: '+esc(c["Status"])+'. Priority: '+esc(c["Priority"])+'.</li><li>Next step: '+esc(next)+'</li></ul>'
+    +'<p class="small muted">This handling summary is generated in the browser from the fields above for demonstration. It is not a real CRA case history.</p>'
+    +'</div>';
+}
+function showList(){
+  document.getElementById("view-detail").classList.add("hidden");
+  document.getElementById("view-list").classList.remove("hidden");
+  document.getElementById("nav-list").setAttribute("aria-current","page");
+  window.scrollTo({top:0});
+}
+function showToast(msg){
+  var t=document.getElementById("toast"); t.textContent=msg; t.classList.remove("hidden");
+  setTimeout(function(){t.classList.add("hidden");}, 4200);
+}
+
+function setLiveBar(mode, when){
+  var bar=document.getElementById("livebar");
+  bar.classList.remove("loading","cached");
+  if(mode==="live"){
+    document.getElementById("live-title").innerHTML = '● Live from Google Sheet';
+    document.getElementById("live-sub").textContent = "Last fetched "+fmtTime(when)+" · "+allCases.length+" cases loaded from the live CSV feed. Refresh to re-fetch.";
+  } else if(mode==="cached"){
+    bar.classList.add("cached");
+    document.getElementById("live-title").innerHTML = '⚠ Cached snapshot — live feed unavailable';
+    document.getElementById("live-sub").textContent = SNAPSHOT_LABEL+". The live Google Sheet could not be reached just now, so these rows may be out of date. They are NOT being shown as live. Try Refresh.";
+  } else {
+    bar.classList.add("loading");
+    document.getElementById("live-title").textContent = "Loading cases…";
+    document.getElementById("live-sub").textContent = "Fetching the live Google Sheet feed.";
+  }
+}
+
+function loadLive(){
+  setLiveBar("loading");
+  var url = SHEET_URL + "&_cb=" + Date.now();
+  fetch(url, {cache:"no-store"})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+    .then(function(text){
+      var parsed = parseCSV(text);
+      if(!parsed.length) throw new Error("Empty feed");
+      /* Preserve any local-only cases added this session */
+      var locals = allCases.filter(function(c){return c._local;});
+      allCases = parsed.concat(locals);
+      populateFilters(); renderList(); setLiveBar("live", new Date());
+    })
+    .catch(function(err){
+      if(!allCases.length){ allCases = SNAPSHOT.slice(); }
+      populateFilters(); renderList(); setLiveBar("cached", new Date());
+    });
+}
+
+["q","f-status","f-category","f-channel","f-sla"].forEach(function(id){
+  document.getElementById(id).addEventListener("input", renderList);
+  document.getElementById(id).addEventListener("change", renderList);
+});
+document.getElementById("clear-btn").addEventListener("click", function(){
+  document.getElementById("q").value=""; document.getElementById("f-status").value=""; document.getElementById("f-category").value=""; document.getElementById("f-channel").value=""; document.getElementById("f-sla").checked=false; renderList();
+});
+document.getElementById("refresh-btn").addEventListener("click", loadLive);
+
+document.getElementById("add-form").addEventListener("submit", function(e){
+  e.preventDefault();
+  localSeq++;
+  var due = new Date(); due.setDate(due.getDate()+7);
+  var dueStr = due.getFullYear()+"-"+String(due.getMonth()+1).padStart(2,"0")+"-"+String(due.getDate()).padStart(2,"0");
+  var nc = {"Case ID":"CRA-"+localSeq,"Date Opened":todayStr(),"Taxpayer":document.getElementById("a-taxpayer").value.trim(),"Category":document.getElementById("a-category").value,"Channel":document.getElementById("a-channel").value,"Status":"New","Priority":document.getElementById("a-priority").value,"SLA Due":dueStr,"SLA Status":"On track","Assigned To":"Unassigned","Notes":document.getElementById("a-notes").value.trim()||"New inquiry logged in this demo session; needs triage.", _local:true};
+  allCases.unshift(nc);
+  populateFilters(); renderList();
+  e.target.reset(); populateFilters();
+  showToast("Case "+nc["Case ID"]+" added — local demo only. It was NOT saved to the Google Sheet and will disappear on reload.");
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+/* Initial load: live fetch on every load */
+loadLive();
+</script>
+</body>
+</html>
